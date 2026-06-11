@@ -1,0 +1,19 @@
+server:
+  port: 8002
+
+spring:
+  application:
+    name: order-service
+
+  cloud:
+    consul:
+#      enabled: false
+      host: localhost
+      port: 8500
+
+      discovery:
+        register: true
+        prefer-ip-address: true
+        ip-address: 10.0.9.111
+        health-check-path: /actuator/health
+        health-check-interval: 15s
