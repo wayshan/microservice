@@ -4,6 +4,11 @@ server:
 spring:
   application:
     name: user-service
+  datasource:
+    driver-class-name: dm.jdbc.driver.DmDriver
+    url: jdbc:dm://10.0.9.111:5236?schema=TEST&columnNameUpperCase=false&columnNameCase=lower
+    username: SYSDBA
+    password: SYSDBA
 
   cloud:
     consul:
@@ -16,3 +21,14 @@ spring:
         ip-address: 10.0.9.111
         health-check-path: /actuator/health
         health-check-interval: 15s
+
+mybatis-plus:
+  configuration:
+    map-underscore-to-camel-case: true
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+  global-config:
+    db-config:
+      id-type: auto
+      table-format: "\"%s\""
+  type-aliases-package: com.user.entity
+  mapper-locations: classpath*:mapper/*.xml
