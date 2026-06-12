@@ -1,43 +1,72 @@
+# ============================
+# 网关服务配置
+# ============================
+
 server:
+  # 网关服务端口，所有外部请求统一通过此端口进入
   port: 8080
 
 spring:
   application:
+    # 服务名称，用于 Consul 注册和网关路由识别
     name: gateway-service
 
   cloud:
+    # --- Consul 服务发现配置 ---
     consul:
-      host: localhost
-      port: 8500
+      host: localhost          # Consul 服务端地址
+      port: 8500               # Consul 默认端口
       discovery:
-        register: true
-        prefer-ip-address: true
-        ip-address: 10.0.9.111
-        health-check-path: /actuator/health
-        health-check-interval: 15s
+        register: true         # 是否将网关注册到 Consul
+        prefer-ip-address: true # 使用 IP 而非主机名注册
+        ip-address: 10.0.9.111 # 注册到 Consul 的 IP 地址
+        health-check-path: /actuator/health   # 健康检查路径
+        health-check-interval: 15s            # 健康检查间隔
 
+    # --- Spring Cloud Gateway 路由配置 ---
     gateway:
       discovery:
         locator:
+          # 是否根据 Consul 服务列表自动创建路由（false 表示使用下方手动配置的路由）
           enabled: false
+          # 服务 ID 转小写匹配
           lower-case-service-id: true
       routes:
-        - id: order-service
-          uri: lb://order-service
+        # --- 订单服务路由 ---
+        - id: order-service                          # 路由唯一标识
+          uri: lb://order-service                    # lb:// 表示从 Consul 负载均衡获取地址
           predicates:
-            - Path=/order-service/**
+            - Path=/order-service/**                 # 匹配以 /order-service/ 开头的请求
           filters:
-            - StripPrefix=1
-            - AddRequestHeader=X-Gateway-Forwarded, true
-        - id: user-service
-          uri: lb://user-service
+            - StripPrefix=1                          # 转发时去掉第一层路径（/order-service）
+
+        # --- 用户服务路由 ---
+        - id: user-service                           # 路由唯一标识
+          uri: lb://user-service                     # lb:// 表示从 Consul 负载均衡获取地址
           predicates:
-            - Path=/user-service/**
+            - Path=/user-service/**                  # 匹配以 /user-service/ 开头的请求
           filters:
-            - StripPrefix=1
-            - AddRequestHeader=X-Gateway-Forwarded, true
+            - StripPrefix=1                          # 转发时去掉第一层路径（/user-service）
+
+# ============================
+# 网关 HMAC 签名认证配置
+# 网关全局过滤器会为每个转发请求生成签名令牌，微服务验签以确认请求来源合法
+# ============================
+gateway:
+  auth:
+    # HMAC-SHA256 签名密钥（网关与所有微服务必须保持一致）
+    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
+    # 签名令牌有效期（秒），超过此时间的请求将被拒绝（防重放攻击）
+    expire-seconds: 30
+
+# ============================
+# 日志级别配置
+# ============================
 logging:
   level:
+    # 网关路由匹配和转发过程的日志
     org.springframework.cloud.gateway: DEBUG
-    reactor.netty.http.client: DEBUG     # 查看网关向下游发出的 HTTP 请求
-    org.springframework.http.server.reactive: DEBUG  # 查看请求/响应详情
+    # 网关向下游微服务发出的 HTTP 请求日志
+    reactor.netty.http.client: DEBUG
+    # 请求/响应详细信息日志
+    org.springframework.http.server.reactive: DEBUG

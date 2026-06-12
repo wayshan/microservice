@@ -1,34 +1,62 @@
+# ============================
+# 用户服务配置
+# ============================
+
 server:
+  # 服务端口
   port: 8001
 
 spring:
   application:
+    # 服务名称，用于 Consul 注册
     name: user-service
+
+  # --- 达梦数据源配置 ---
   datasource:
-    driver-class-name: dm.jdbc.driver.DmDriver
-    url: jdbc:dm://10.0.9.111:5236?schema=TEST&columnNameUpperCase=false&columnNameCase=lower
-    username: SYSDBA
-    password: SYSDBA
+    driver-class-name: dm.jdbc.driver.DmDriver                                          # 达梦 JDBC 驱动
+    url: jdbc:dm://10.0.9.111:5236?schema=TEST&columnNameUpperCase=false&columnNameCase=lower  # 数据库连接地址
+    username: SYSDBA    # 数据库用户名
+    password: SYSDBA    # 数据库密码
 
   cloud:
+    # --- Consul 服务发现配置 ---
     consul:
-      host: localhost
-      port: 8500
-
+      host: localhost          # Consul 服务端地址
+      port: 8500               # Consul 默认端口
       discovery:
-        register: true
-        prefer-ip-address: true
-        ip-address: 10.0.9.111
-        health-check-path: /actuator/health
-        health-check-interval: 15s
+        register: true         # 是否注册到 Consul
+        prefer-ip-address: true # 使用 IP 注册
+        ip-address: 10.0.9.111 # 注册到 Consul 的 IP 地址
+        health-check-path: /actuator/health   # 健康检查路径
+        health-check-interval: 15s            # 健康检查间隔
 
+# ============================
+# MyBatis-Plus 配置
+# ============================
 mybatis-plus:
   configuration:
+    # 驼峰命名自动映射（数据库下划线 → Java 驼峰）
     map-underscore-to-camel-case: true
+    # SQL 日志输出到控制台（开发调试用）
     log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
   global-config:
     db-config:
+      # 主键策略：数据库自增
       id-type: auto
+      # 表名格式：双引号包裹（达梦数据库大小写敏感，需加双引号保持大写）
       table-format: "\"%s\""
+  # 实体类包路径
   type-aliases-package: com.user.entity
+  # Mapper XML 文件位置
   mapper-locations: classpath*:mapper/*.xml
+
+# ============================
+# 网关 HMAC 签名认证配置（与网关保持一致）
+# 用于验签网关转发的请求，确认请求来源合法
+# ============================
+gateway:
+  auth:
+    # HMAC-SHA256 签名密钥（必须与网关一致）
+    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
+    # 签名令牌有效期（秒）
+    expire-seconds: 30

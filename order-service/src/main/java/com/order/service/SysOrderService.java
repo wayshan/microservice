@@ -6,6 +6,10 @@ import com.common.vo.SysOrderVO;
 
 import java.util.List;
 
+/**
+ * 系统订单服务接口
+ * <p>继承 MyBatis-Plus IService，提供 SYS_ORDER 表的业务层操作。</p>
+ */
 public interface SysOrderService extends IService<SysOrder> {
 
     /**

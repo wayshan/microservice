@@ -10,6 +10,11 @@ import org.springframework.web.bind.annotation.*;
 import java.util.List;
 import java.util.stream.Collectors;
 
+/**
+ * 系统用户控制器
+ * <p>提供 SYS_USER 表的 CRUD 接口。</p>
+ * <p>对外不暴露 password 字段，通过 VO 转换过滤敏感信息。</p>
+ */
 @RestController
 @RequestMapping("/user")
 public class SysUserController {
