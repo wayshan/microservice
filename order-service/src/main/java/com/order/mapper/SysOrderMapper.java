@@ -2,7 +2,7 @@ package com.order.mapper;
 
 import com.baomidou.mybatisplus.core.mapper.BaseMapper;
 import com.order.entity.SysOrder;
-import com.order.vo.SysOrderVO;
+import com.common.vo.SysOrderVO;
 import org.apache.ibatis.annotations.Mapper;
 
 import java.util.List;

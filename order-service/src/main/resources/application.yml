@@ -23,6 +23,8 @@ spring:
         health-check-interval: 15s
 
     openfeign:
+      circuitbreaker:
+        enabled: true
       client:
         config:
           user-service:

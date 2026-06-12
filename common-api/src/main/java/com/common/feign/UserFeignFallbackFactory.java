@@ -1,12 +1,12 @@
-package com.order.feign;
+package com.common.feign;
 
-import com.order.vo.SysUserVO;
+import com.common.vo.SysUserVO;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.boot.autoconfigure.AutoConfiguration;
 import org.springframework.cloud.openfeign.FallbackFactory;
-import org.springframework.stereotype.Component;
 
 @Slf4j
-@Component
+@AutoConfiguration
 public class UserFeignFallbackFactory implements FallbackFactory<UserFeignClient> {
 
     @Override
@@ -18,6 +18,7 @@ public class UserFeignFallbackFactory implements FallbackFactory<UserFeignClient
                 SysUserVO fallback = new SysUserVO();
                 fallback.setId(id);
                 fallback.setUserName("未知用户");
+                fallback.setFallback(true);
                 return fallback;
             }
         };

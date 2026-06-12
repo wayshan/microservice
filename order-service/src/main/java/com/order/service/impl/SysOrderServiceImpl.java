@@ -2,11 +2,11 @@ package com.order.service.impl;
 
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.order.entity.SysOrder;
-import com.order.feign.UserFeignClient;
+import com.common.feign.UserFeignClient;
+import com.common.vo.SysOrderVO;
+import com.common.vo.SysUserVO;
 import com.order.mapper.SysOrderMapper;
 import com.order.service.SysOrderService;
-import com.order.vo.SysOrderVO;
-import com.order.vo.SysUserVO;
 import org.springframework.beans.BeanUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;

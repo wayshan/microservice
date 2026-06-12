@@ -2,7 +2,7 @@ package com.order.controller;
 
 import com.order.entity.SysOrder;
 import com.order.service.SysOrderService;
-import com.order.vo.SysOrderVO;
+import com.common.vo.SysOrderVO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.*;
 

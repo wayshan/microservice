@@ -2,7 +2,7 @@
 <!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 <mapper namespace="com.order.mapper.SysOrderMapper">
 
-    <resultMap id="SysOrderVOMap" type="com.order.vo.SysOrderVO">
+    <resultMap id="SysOrderVOMap" type="com.common.vo.SysOrderVO">
         <id column="ID" property="id"/>
         <result column="ORDER_NO" property="orderNo"/>
         <result column="USER_ID" property="userId"/>

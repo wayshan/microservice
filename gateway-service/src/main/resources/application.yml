@@ -25,15 +25,19 @@ spring:
         - id: order-service
           uri: lb://order-service
           predicates:
-            - Path=/order3-service/**
+            - Path=/order-service/**
           filters:
             - StripPrefix=1
+            - AddRequestHeader=X-Gateway-Forwarded, true
         - id: user-service
           uri: lb://user-service
           predicates:
             - Path=/user-service/**
           filters:
             - StripPrefix=1
+            - AddRequestHeader=X-Gateway-Forwarded, true
 logging:
   level:
     org.springframework.cloud.gateway: DEBUG
+    reactor.netty.http.client: DEBUG     # 查看网关向下游发出的 HTTP 请求
+    org.springframework.http.server.reactive: DEBUG  # 查看请求/响应详情
