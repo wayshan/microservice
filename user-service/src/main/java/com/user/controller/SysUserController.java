@@ -1,5 +1,7 @@
 package com.user.controller;
 
+import cn.hutool.crypto.SecureUtil;
+import com.common.result.ResponseResult;
 import com.common.vo.SysUserVO;
 import com.user.entity.SysUser;
 import com.user.service.SysUserService;
@@ -26,43 +28,65 @@ public class SysUserController {
      * 查询所有用户
      */
     @GetMapping("/list")
-    public List<SysUserVO> list() {
-        return sysUserService.list().stream()
+    public ResponseResult list() {
+        List<SysUserVO> list = sysUserService.list().stream()
                 .map(this::toVO)
                 .collect(Collectors.toList());
+        return ResponseResult.ok("list", list);
     }
 
     /**
      * 根据ID查询用户
      */
     @GetMapping("/{id}")
-    public SysUserVO getById(@PathVariable Long id) {
+    public ResponseResult getById(@PathVariable Long id) {
         SysUser user = sysUserService.getById(id);
-        return user != null ? toVO(user) : null;
+        if (user == null) {
+            return ResponseResult.error("404", "用户不存在");
+        }
+        return ResponseResult.ok("user", toVO(user));
     }
+
+
+
+//    @PostMapping("/login")
+//    public ResponseResult login(@RequestBody LoginDTO loginDTO) {
+//        // 验证用户名密码
+//        SysUser user = userService.authenticate(loginDTO);
+//
+//        // 生成token
+//        String token = JwtUtils.generateToken(user.getUsername(), user.getId());
+//
+//        return ResponseResult.ok(data -> {
+//            data.put("token", token);
+//            data.put("user", user);
+//        });
+//    }
+
+
 
     /**
      * 新增用户
      */
     @PostMapping
-    public boolean save(@RequestBody SysUser sysUser) {
-        return sysUserService.save(sysUser);
+    public ResponseResult save(@RequestBody SysUser sysUser) {
+        return ResponseResult.ok("result", sysUserService.save(sysUser));
     }
 
     /**
      * 修改用户
      */
     @PutMapping
-    public boolean update(@RequestBody SysUser sysUser) {
-        return sysUserService.updateById(sysUser);
+    public ResponseResult update(@RequestBody SysUser sysUser) {
+        return ResponseResult.ok("result", sysUserService.updateById(sysUser));
     }
 
     /**
      * 删除用户
      */
     @DeleteMapping("/{id}")
-    public boolean delete(@PathVariable Long id) {
-        return sysUserService.removeById(id);
+    public ResponseResult delete(@PathVariable Long id) {
+        return ResponseResult.ok("result", sysUserService.removeById(id));
     }
 
     /**

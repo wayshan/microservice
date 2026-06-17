@@ -39,6 +39,14 @@
                 <type>pom</type>
                 <scope>import</scope>
             </dependency>
+
+            <!-- 新增：Hutool 版本管理 -->
+            <dependency>
+                <groupId>cn.hutool</groupId>
+                <artifactId>hutool-all</artifactId>
+                <version>5.8.46</version>
+                <scope>compile</scope>
+            </dependency>
         </dependencies>
     </dependencyManagement>
 </project>

@@ -1,5 +1,6 @@
 package com.order.controller;
 
+import com.common.result.ResponseResult;
 import com.order.pojo.Order;
 import com.order.service.OrderService;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -28,7 +29,8 @@ public class OrderController {
      * @return 订单列表
      */
     @GetMapping("/myOrder")
-    public List<Order> getMyOrders() {
-        return orderService.getMyOrders();
+    public ResponseResult getMyOrders() {
+        List<Order> list = orderService.getMyOrders();
+        return ResponseResult.ok("list", list);
     }
 }
