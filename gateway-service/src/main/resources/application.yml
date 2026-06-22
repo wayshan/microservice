@@ -11,6 +11,11 @@ spring:
     # 服务名称，用于 Consul 注册和网关路由识别
     name: gateway-service
 
+  # --- Spring Boot 3.x 启用 Consul 配置导入 ---
+  config:
+    import: 'optional:consul:'   # 从 Consul KV 拉取配置（optional 表示 Consul 不可用时不报错）
+    #import: 'optional:consul:{host}:{port}/{自定义前缀}/'  #默认config
+
   cloud:
     # --- Consul 服务发现配置 ---
     consul:
@@ -22,6 +27,14 @@ spring:
         ip-address: 10.0.9.111 # 注册到 Consul 的 IP 地址
         health-check-path: /actuator/health   # 健康检查路径
         health-check-interval: 15s            # 健康检查间隔
+      config:
+        enabled: true              # 启用 Consul 配置中心
+        format: YAML               # 将 KV Value 按 YAML 格式解析
+        default-context: application  # 共享配置前缀（所有服务通用）
+        data-key: data             # 存放 YAML 内容的 Key 名
+        watch:
+          enabled: true            # 启用配置变更监听（动态刷新）
+          delay: 10000               # 变更检查间隔（毫秒）
 
     # --- Spring Cloud Gateway 路由配置 ---
     gateway:
@@ -48,21 +61,34 @@ spring:
           filters:
             - StripPrefix=1                          # 转发时去掉第一层路径（/user-service）
 
+## ============================
+## 网关 HMAC 签名认证配置
+## 网关全局过滤器会为每个转发请求生成签名令牌，微服务验签以确认请求来源合法
+## ============================
+#gateway:
+#  auth:
+#    # HMAC-SHA256 签名密钥（网关与所有微服务必须保持一致）
+#    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
+#    # 签名令牌有效期（秒），超过此时间的请求将被拒绝（防重放攻击）
+#    expire-seconds: 30
+
 # ============================
-# 网关 HMAC 签名认证配置
-# 网关全局过滤器会为每个转发请求生成签名令牌，微服务验签以确认请求来源合法
+# 链路追踪配置（Zipkin）
 # ============================
-gateway:
-  auth:
-    # HMAC-SHA256 签名密钥（网关与所有微服务必须保持一致）
-    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
-    # 签名令牌有效期（秒），超过此时间的请求将被拒绝（防重放攻击）
-    expire-seconds: 30
+management:
+  tracing:
+    sampling:
+      probability: 1.0              # 采样率 100%（生产环境建议 0.1）
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans  # Zipkin Server 地址
 
 # ============================
 # 日志级别配置
 # ============================
 logging:
+  pattern:
+    level: '%5p [${spring.application.name:-},%X{traceId:-},%X{spanId:-}]'
   level:
     root: INFO
     # 网关路由匹配和转发过程的日志

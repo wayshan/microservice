@@ -1,6 +1,6 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="CoolRequestCommonStatePersistent">
-    <option name="searchCache" value="spring-cloud-starter-circuitbreaker-resilience4j" />
+    <option name="searchCache" value="Resilience4J" />
   </component>
 </project>

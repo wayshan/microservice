@@ -10,7 +10,8 @@ spring:
   application:
     # 服务名称，用于 Consul 注册
     name: user-service
-
+  config:
+    import: 'optional:consul:'
   # --- 达梦数据源配置 ---
   datasource:
     driver-class-name: dm.jdbc.driver.DmDriver                                          # 达梦 JDBC 驱动
@@ -29,6 +30,32 @@ spring:
         ip-address: 10.0.9.111 # 注册到 Consul 的 IP 地址
         health-check-path: /actuator/health   # 健康检查路径
         health-check-interval: 15s            # 健康检查间隔
+      config:
+        enabled: true              # 启用 Consul 配置中心
+        format: YAML               # 将 KV Value 按 YAML 格式解析
+        default-context: application  # 共享配置前缀（所有服务通用）
+        data-key: data             # 存放 YAML 内容的 Key 名
+        watch:
+          enabled: true            # 启用配置变更监听（动态刷新）
+          delay: 10000             # 变更检查间隔（毫秒）
+
+# ============================
+# 链路追踪配置（Zipkin）
+# ============================
+management:
+  tracing:
+    sampling:
+      probability: 1.0              # 采样率 100%（生产环境建议 0.1）
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans  # Zipkin Server 地址
+
+# ============================
+# 日志配置（日志格式必须本地配置，Consul KV 加载时日志系统已初始化）
+# ============================
+logging:
+  pattern:
+    level: '%5p [${spring.application.name:-},%X{traceId:-},%X{spanId:-}]'
 
 # ============================
 # MyBatis-Plus 配置
@@ -50,13 +77,15 @@ mybatis-plus:
   # Mapper XML 文件位置
   mapper-locations: classpath*:mapper/*.xml
 
-# ============================
-# 网关 HMAC 签名认证配置（与网关保持一致）
-# 用于验签网关转发的请求，确认请求来源合法
-# ============================
-gateway:
-  auth:
-    # HMAC-SHA256 签名密钥（必须与网关一致）
-    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
-    # 签名令牌有效期（秒）
-    expire-seconds: 30
+## ============================
+## 网关 HMAC 签名认证配置（与网关保持一致）
+## 用于验签网关转发的请求，确认请求来源合法
+## ============================
+#gateway:
+#  auth:
+#    # HMAC-SHA256 签名密钥（必须与网关一致）
+#    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
+#    # 签名令牌有效期（秒）
+#    expire-seconds: 30
+
+

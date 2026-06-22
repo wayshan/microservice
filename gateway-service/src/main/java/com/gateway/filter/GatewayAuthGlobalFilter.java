@@ -1,5 +1,6 @@
 package com.gateway.filter;
 
+import com.common.auth.HmacUtils;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.cloud.gateway.filter.GatewayFilterChain;
 import org.springframework.cloud.gateway.filter.GlobalFilter;
@@ -8,11 +9,6 @@ import org.springframework.http.server.reactive.ServerHttpRequest;
 import org.springframework.stereotype.Component;
 import org.springframework.web.server.ServerWebExchange;
 import reactor.core.publisher.Mono;
-
-import javax.crypto.Mac;
-import javax.crypto.spec.SecretKeySpec;
-import java.nio.charset.StandardCharsets;
-import java.util.Base64;
 
 /**
  * 网关全局过滤器：为每个转发请求生成 HMAC-SHA256 签名令牌。
@@ -38,8 +34,7 @@ public class GatewayAuthGlobalFilter implements GlobalFilter, Ordered {
     @Override
     public Mono<Void> filter(ServerWebExchange exchange, GatewayFilterChain chain) {
         String timestamp = String.valueOf(System.currentTimeMillis());
-        String signature = sign(timestamp, secretKey);
-        String token = timestamp + "." + signature;
+        String token = HmacUtils.generateToken(timestamp, secretKey);
 
         ServerHttpRequest mutatedRequest = exchange.getRequest().mutate()
                 .header("X-Gateway-Token", token)
@@ -55,23 +50,5 @@ public class GatewayAuthGlobalFilter implements GlobalFilter, Ordered {
     @Override
     public int getOrder() {
         return -200;
-    }
-
-    /**
-     * 使用 HMAC-SHA256 算法对数据进行签名。
-     *
-     * @param data 待签名的数据（通常为时间戳）
-     * @param key  签名密钥
-     * @return Base64 编码的签名字符串
-     */
-    public static String sign(String data, String key) {
-        try {
-            Mac mac = Mac.getInstance("HmacSHA256");
-            mac.init(new SecretKeySpec(key.getBytes(StandardCharsets.UTF_8), "HmacSHA256"));
-            byte[] hash = mac.doFinal(data.getBytes(StandardCharsets.UTF_8));
-            return Base64.getEncoder().encodeToString(hash);
-        } catch (Exception e) {
-            throw new RuntimeException("HMAC signing failed", e);
-        }
     }
 }

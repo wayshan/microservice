@@ -1,7 +1,8 @@
 # ============================
 # 订单服务配置
-# ============================
-
+# ============================+
+dy:
+  test: 本地配置的值
 server:
   # 绑定地址（仅监听本机回环地址，外部无法直连，必须通过网关访问）
   address: 127.0.0.1
@@ -9,16 +10,20 @@ server:
   port: 8002
 
 spring:
+  # --- Spring Boot 3.x 启用 Consul 配置导入 ---
+  config:
+    import: 'optional:consul:'   # 从 Consul KV 拉取配置（optional 表示 Consul 不可用时不报错）
+    #import: 'optional:consul:{host}:{port}/{自定义前缀}/'  #默认config
   application:
     # 服务名称，用于 Consul 注册
     name: order-service
 
-  # --- 达梦数据源配置 ---
-  datasource:
-    driver-class-name: dm.jdbc.driver.DmDriver                                          # 达梦 JDBC 驱动
-    url: jdbc:dm://10.0.9.111:5236?schema=TEST&columnNameUpperCase=false&columnNameCase=lower  # 数据库连接地址
-    username: SYSDBA    # 数据库用户名
-    password: SYSDBA    # 数据库密码
+#  # --- 达梦数据源配置 ---
+#  datasource:
+#    driver-class-name: dm.jdbc.driver.DmDriver                                          # 达梦 JDBC 驱动
+#    url: jdbc:dm://10.0.9.111:5236?schema=TEST&columnNameUpperCase=false&columnNameCase=lower  # 数据库连接地址
+#    username: SYSDBA    # 数据库用户名
+#    password: SYSDBA    # 数据库密码
 
   cloud:
     # --- Consul 服务发现配置 ---
@@ -31,6 +36,15 @@ spring:
         ip-address: 127.0.0.1  # 注册 IP（本机回环，仅网关可访问）
         health-check-path: /actuator/health   # 健康检查路径
         health-check-interval: 15s            # 健康检查间隔
+      config:
+        enabled: true              # 启用 Consul 配置中心
+        format: YAML               # 将 KV Value 按 YAML 格式解析
+        default-context: application  # 共享配置前缀（所有服务通用）
+        data-key: data             # 存放 YAML 内容的 Key 名
+        watch:
+          enabled: true            # 启用配置变更监听（动态刷新）
+          delay: 10000               # 变更检查间隔（毫秒）
+
 
     # --- OpenFeign 服务间调用配置 ---
     openfeign:
@@ -41,6 +55,24 @@ spring:
           user-service:        # 调用 user-service 的 Feign 客户端配置
             connect-timeout: 5000  # 连接超时（毫秒）
             read-timeout: 5000     # 读取超时（毫秒）
+
+# ============================
+# 链路追踪配置（Zipkin）
+# ============================
+management:
+  tracing:
+    sampling:
+      probability: 1.0              # 采样率 100%（生产环境建议 0.1）
+  zipkin:
+    tracing:
+      endpoint: http://localhost:9411/api/v2/spans  # Zipkin Server 地址
+
+# ============================
+# 日志配置（日志格式必须本地配置，Consul KV 加载时日志系统已初始化）
+# ============================
+logging:
+  pattern:
+    level: '%5p [${spring.application.name:-},%X{traceId:-},%X{spanId:-}]'
 
 # ============================
 # MyBatis-Plus 配置
@@ -62,13 +94,13 @@ mybatis-plus:
   # Mapper XML 文件位置
   mapper-locations: classpath*:mapper/*.xml
 
-# ============================
-# 网关 HMAC 签名认证配置（与网关保持一致）
-# 用于验签网关转发的请求，以及 Feign 内部调用时生成签名令牌
-# ============================
-gateway:
-  auth:
-    # HMAC-SHA256 签名密钥（必须与网关一致）
-    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
-    # 签名令牌有效期（秒）
-    expire-seconds: 30
+## ============================
+## 网关 HMAC 签名认证配置（与网关保持一致）
+## 用于验签网关转发的请求，以及 Feign 内部调用时生成签名令牌
+## ============================
+#gateway:
+#  auth:
+#    # HMAC-SHA256 签名密钥（必须与网关一致）
+#    secret-key: a3f8b2c1d4e5f6a7b8c9d0e1f2a3b4c5
+#    # 签名令牌有效期（秒）
+#    expire-seconds: 30

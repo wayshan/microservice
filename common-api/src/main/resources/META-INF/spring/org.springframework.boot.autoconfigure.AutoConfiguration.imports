@@ -1,1 +1,3 @@
 com.common.feign.UserFeignFallbackFactory
+com.common.auth.HmacServletAuthAutoConfiguration
+com.common.auth.HmacFeignAuthAutoConfiguration
